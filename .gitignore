@@ -1,55 +1,98 @@
-# Prerequisites
-*.d
+# ============================================================================ #
+#                           Build / Output Artifacts                           #
+# ============================================================================ #
 
-# Object files
+/build/
+/builds/
+/out/
+cmake-build-*/
+
+# ============================================================================ #
+#                            C / C++ Compiled Files                            #
+# ============================================================================ #
+
+# Object files & Prerequisites
 *.o
-*.ko
 *.obj
 *.elf
+*.d
 
-# Linker output
+# Linker & Precompiled
 *.ilk
 *.map
 *.exp
-
-# Precompiled Headers
 *.gch
 *.pch
 
-# Libraries
-*.lib
+# Static & Shared Libraries
 *.a
-*.la
-*.lo
-
-# Shared objects (inc. Windows DLLs)
-*.dll
+*.lib
 *.so
 *.so.*
+*.dll
 *.dylib
 
 # Executables
 *.exe
 *.out
 *.app
-*.i*86
-*.x86_64
-*.hex
 
-# Debug files
+# Debug information
 *.dSYM/
 *.su
-*.idb
 *.pdb
+*.idb
 
-# Kernel Module Compile Results
-*.mod*
-*.cmd
-.tmp_versions/
-modules.order
-Module.symvers
-Mkfile.old
-dkms.conf
+# ============================================================================ #
+#                                 IDE / Editor                                 #
+# ============================================================================ #
 
-# debug information files
-*.dwo
+# CLion & JetBrains
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VS Code
+.vscode/
+
+# ============================================================================ #
+#                                 OS-specific                                  #
+# ============================================================================ #
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Linux
+.Trash-*
+.fuse_hidden*
+.nfs*
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+~$*.docx
+~$*.pptx
+~$*.xlsx

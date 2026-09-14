@@ -1,0 +1,78 @@
+# ============================================================================ #
+#                               Quality Workflow                               #
+# ============================================================================ #
+# Runs clang-format code style checks on every push to dev and release, and on #
+# every pull request targeting either branch.                                  #
+#                                                                              #
+# Skip tags (anywhere in commit message or PR title):                          #
+#   [ci-skip]      - skips all workflows                                       #
+#   [quality-skip] - skips this workflow only                                  #
+# ============================================================================ #
+
+name: "CI: Quality"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["dev", "release"]
+    paths:
+      - "lab_*/**"
+      - "src/**"
+      - "include/**"
+      - "**/CMakeLists.txt"
+      - "CMakeLists.txt"
+      - ".clang-format"
+      - ".editorconfig"
+  pull_request:
+    branches: ["dev", "release"]
+
+concurrency:
+  group: "quality-${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: true
+
+permissions:
+  contents: "read"
+
+jobs:
+  # Check if the commit message / PR title contains skip tags
+  check:
+    name: "Skip Check"
+    runs-on: "ubuntu-latest"
+    outputs:
+      should_skip: ${{ steps.belay.outputs.issued }}
+
+    steps:
+      - name: "Setup: Checkout repository"
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+
+      - name: "Run: Check skip tags"
+        id: "belay"
+        uses: OctalMesh/belay-action@v1
+        with:
+          signal_tags: "[ci-skip],[quality-skip]"
+
+  # Perform code quality analysis
+  quality:
+    name: "Analyze"
+    needs: "check"
+    if: needs.check.outputs.should_skip != 'true'
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 15
+
+    steps:
+      - name: "Setup: Checkout repository"
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      - name: "Setup: Install Clang-Format"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-format
+
+      - name: "Run: Clang-Format check"
+        run: |
+          find . -type f \( -name "*.c" -o -name "*.h" \) -not -path "./build/*" | xargs clang-format --dry-run --Werror
