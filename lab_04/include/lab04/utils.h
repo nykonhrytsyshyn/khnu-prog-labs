@@ -3,4 +3,4 @@
 
 int calculate_sum(int a, int b);
 
-#endif // LAB04_UTILS_H
+#endif  // LAB04_UTILS_H

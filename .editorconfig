@@ -10,16 +10,15 @@ trim_trailing_whitespace = true
 # Indentation & Spacing
 
 indent_style = space
-indent_size = 4
-tab_width = 4
-ij_continuation_indent_size = 4
+indent_size = 2
+tab_width = 2
 
 # Line Length & Guides
 
-max_line_length = 120
+max_line_length = 80
 ij_visual_guides = 80, 120
 
-[{CMakeLists.txt,*.cmake,CMakePresets.json,*.{md,yml,yaml,json}}]
+[{CMakeLists.txt,*.cmake,CMakePresets.json,.clang-format,*.{md,yml,yaml,json}}]
 
 indent_size = 2
 tab_width = 2

@@ -9,22 +9,22 @@ set(CMAKE_C_EXTENSIONS OFF)
 # Use CCache if available
 find_program(CCACHE_PROGRAM ccache)
 
-if(CCACHE_PROGRAM)
-    set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
-endif()
+if (CCACHE_PROGRAM)
+  set(CMAKE_C_COMPILER_LAUNCHER "${CCACHE_PROGRAM}")
+endif ()
 
 # Set compiler warning flags based on the compiler
-if(MSVC)
-    add_compile_options(/W4 /WX)
-else()
-    add_compile_options(-Wall -Wextra -Wpedantic -Werror)
-endif()
+if (MSVC)
+  add_compile_options(/W4 /WX)
+else ()
+  add_compile_options(-Wall -Wextra -Wpedantic -Werror)
+endif ()
 
 # Add subdirectories for each "lab_*" directory that contains a CMakeLists.txt file
 file(GLOB LAB_DIRS LIST_DIRECTORIES true RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} lab_*)
 
-foreach(DIR ${LAB_DIRS})
-    if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DIR} AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${DIR}/CMakeLists.txt)
-        add_subdirectory(${DIR})
-    endif()
-endforeach()
+foreach (DIR ${LAB_DIRS})
+  if (IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${DIR} AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${DIR}/CMakeLists.txt)
+    add_subdirectory(${DIR})
+  endif ()
+endforeach ()
