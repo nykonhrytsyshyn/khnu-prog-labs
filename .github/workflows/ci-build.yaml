@@ -21,6 +21,8 @@ on:
       - "include/**"
       - "**/CMakeLists.txt"
       - "CMakeLists.txt"
+      - "CMakePresets.json"
+      - "Makefile"
   pull_request:
     branches: ["dev", "release"]
 
@@ -69,10 +71,7 @@ jobs:
       - name: "Setup: Install build tools"
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build gcc
-
-      - name: "Setup: Configure CMake"
-        run: "cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release"
+          sudo apt-get install -y cmake ninja-build gcc make
 
       - name: "Run: Build all labs"
-        run: "cmake --build build"
+        run: "make build"
