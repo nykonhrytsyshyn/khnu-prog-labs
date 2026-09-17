@@ -1,27 +1,30 @@
+---
 Language: Cpp
-BasedOnStyle: Google
+BasedOnStyle: LLVM
 
 # Line length
 ColumnLimit: 80
 
 # Indentation
-IndentWidth: 2
-TabWidth: 2
+IndentWidth: 4
+TabWidth: 4
 UseTab: Never
 
 # Braces
 BreakBeforeBraces: Attach
-AllowShortFunctionsOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
 
-# Pointers and references
-PointerAlignment: Left
+# Pointers
+PointerAlignment: Right
 DerivePointerAlignment: false
 
 # Alignment
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
-AlignOperands: Align
 AlignTrailingComments: true
+AlignAfterOpenBracket: Align
 
 # Spaces
 SpaceInEmptyParentheses: false
@@ -29,22 +32,24 @@ SpacesInAngles: false
 SpacesInConditionalStatement: false
 SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
+SpaceBeforeParens: ControlStatements
+SpaceAfterCStyleCast: false
 
 # Includes
 SortIncludes: CaseSensitive
 IncludeBlocks: Regroup
 
 # Blocks
-IndentCaseBlocks: true
+IndentCaseBlocks: false
+IndentGotoLabels: true
 NamespaceIndentation: None
 MaxEmptyLinesToKeep: 1
 
-# Templates
-AlwaysBreakTemplateDeclarations: Yes
-
-# Constructors
-BreakConstructorInitializers: BeforeComma
-ConstructorInitializerAllOnOneLineOrOnePerLine: false
+# Functions
+BinPackParameters: true
+BinPackArguments: true
+AllowAllParametersOfDeclarationOnNextLine: true
 
 # Files
 InsertNewlineAtEOF: true
+...
