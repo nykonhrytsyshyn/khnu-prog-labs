@@ -4,6 +4,10 @@ BasedOnStyle: LLVM
 
 # Line length
 ColumnLimit: 80
+PenaltyBreakBeforeMemberAccess: 120
+PenaltyBreakComment: 80
+PenaltyBreakFirstLessLess: 80
+PenaltyReturnTypeOnItsOwnLine: 10000
 
 # Indentation
 IndentWidth: 4
@@ -24,7 +28,7 @@ DerivePointerAlignment: false
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AlignTrailingComments: true
-AlignAfterOpenBracket: Align
+AlignAfterOpenBracket: BlockIndent
 
 # Spaces
 SpaceInEmptyParentheses: false
@@ -38,17 +42,24 @@ SpaceAfterCStyleCast: false
 # Includes
 SortIncludes: CaseSensitive
 IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^".*"'
+    Priority: 1
+  - Regex: '^<.*>'
+    Priority: 2
 
 # Blocks
 IndentCaseBlocks: false
 IndentGotoLabels: true
+IndentCaseLabels: true
 NamespaceIndentation: None
 MaxEmptyLinesToKeep: 1
 
 # Functions
-BinPackParameters: true
-BinPackArguments: true
-AllowAllParametersOfDeclarationOnNextLine: true
+AlwaysBreakAfterReturnType: None
+BinPackParameters: false
+BinPackArguments: false
+AllowAllParametersOfDeclarationOnNextLine: false
 
 # Files
 InsertNewlineAtEOF: true

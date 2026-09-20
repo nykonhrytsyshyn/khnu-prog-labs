@@ -26,8 +26,6 @@ add_executable(lab02
 
 target_include_directories(lab02 PRIVATE include)
 
-target_compile_options(lab02 PRIVATE -Wall -Wextra -Werror -pedantic)
-
 if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/FormatTargets.cmake)
   add_format_targets(
