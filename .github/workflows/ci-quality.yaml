@@ -44,12 +44,6 @@ jobs:
       should_skip: ${{ steps.belay.outputs.issued }}
 
     steps:
-      - name: "Setup: Checkout repository"
-        uses: actions/checkout@v7
-        with:
-          ref: ${{ github.event.pull_request.head.sha || github.sha }}
-          fetch-depth: 1
-
       - name: "Run: Check skip tags"
         id: "belay"
         uses: OctalMesh/belay-action@v1
