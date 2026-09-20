@@ -25,7 +25,7 @@ prints the result with 4 decimal places.
 ```
 lab_01/
 ├── include/
-│   ├── tasks.h   # task registry (X-macro) and run_tasks()
+│   ├── tasks.h   # task registry (X-macro), TASK_COUNT, run_task() / run_all_tasks()
 │   └── utils.h   # read_double() / read_doubles(), PI
 └── src/
     ├── main.c    # menu, task number parsing
@@ -42,20 +42,17 @@ flowchart TD
   A(["Start"]) --> B[/"Print banner<br/>and task prompt"/]
   B --> C[/"Read a line"/]
   C --> D{"Empty line<br/>or end of input?"}
-  D -->|Yes| E["run_tasks(-1)<br/>(all tasks in order)"]
-  D -->|No| F{"Valid number?"}
-  F -->|No| G[/"Print error<br/>status = 1"/]
-  F -->|Yes| H{"In range 1-4?"}
-  H -->|Yes| I["run_tasks(n)<br/>(selected task)"]
-  H -->|No| J[/"Print out-of-range<br/>error"/]
-  E --> K[/"Print 'Press Enter to exit'"/]
-  I --> K
-  G --> K
-  J --> K
-  K --> L(["Stop"])
+  D -->|Yes| E["run_all_tasks()<br/>(all tasks in order)"]
+  D -->|No| F{"Whole line is a number<br/>in range 1-4?"}
+  F -->|Yes| G["run_task(n)<br/>(selected task)"]
+  F -->|No| H[/"Print error<br/>status = 1"/]
+  E --> I[/"Print 'Press Enter to exit'"/]
+  G --> I
+  H --> I
+  I --> J(["Stop"])
 
   classDef stage fill:#363636,stroke:#666,color:#fff,rx:6,ry:6
-  class A,B,C,D,E,F,G,H,I,J,K,L stage
+  class A,B,C,D,E,F,G,H,I,J stage
 ```
 
 ## Task 1 - Triangle: angle γ and bisector w
@@ -83,6 +80,10 @@ flowchart TD
   classDef stage fill:#363636,stroke:#666,color:#fff,rx:6,ry:6
   class A,B,C,D,E,F,G,H stage
 ```
+
+The sides are not checked against the triangle inequality; sides that cannot
+form a triangle make `arccos` receive a value outside `[-1, 1]` and the result
+is `NaN`.
 
 ## Task 2 - Function F(E1, E2, E3)
 
@@ -125,7 +126,7 @@ Written out as a full degree-6 polynomial the coefficients are
 `{-3.7, 0, 0, 4.1, 0, -2.1, 1.2}` (the missing `u⁵`, `u⁴` and `u²` terms are
 zeros, which Horner's scheme requires), so the value is computed as
 `((((((-3.7·u + 0)·u + 0)·u + 4.1)·u + 0)·u - 2.1)·u + 1.2)` with one
-multiplication and one addition per coefficient.
+multiplication and one addition per step (6 steps for 7 coefficients).
 
 ```mermaid
 flowchart TD

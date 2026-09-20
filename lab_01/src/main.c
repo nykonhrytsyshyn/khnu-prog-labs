@@ -5,40 +5,30 @@
 #include <string.h>
 
 int main(void) {
-    int status = 0;
-
     printf(
         "====================================================\n"
         "  Laboratory work 1: Linear algorithms (variant 9)\n"
         "====================================================\n\n"
-        "Enter task number (1-4) or press Enter to run all tasks [ALL]: "
+        "Enter task number (1-%d) or press Enter to run all tasks [ALL]: ",
+        TASK_COUNT
     );
 
-    char buffer[32];
+    char input[32] = "";
+    if (fgets(input, sizeof(input), stdin) != NULL) {
+        input[strcspn(input, "\r\n")] = '\0';
+    }
 
-    if (fgets(buffer, sizeof(buffer), stdin) == NULL) {
-        run_tasks(-1);
+    char *end;
+    const long task = strtol(input, &end, 10);
+    int status = 0;
+
+    if (input[0] == '\0') {
+        run_all_tasks();
+    } else if (*end == '\0' && task >= 1 && task <= TASK_COUNT) {
+        run_task((int)task);
     } else {
-        buffer[strcspn(buffer, "\r\n")] = '\0';
-
-        if (buffer[0] == '\0') {
-            puts("Running all tasks...");
-            run_tasks(-1);
-        } else {
-            char *endptr;
-            const long task = strtol(buffer, &endptr, 10);
-
-            if (*endptr != '\0') {
-                printf(
-                    "Error: Invalid input '%s'. Expected a number from 1 to "
-                    "4 or Enter.\n",
-                    buffer
-                );
-                status = 1;
-            } else {
-                run_tasks((int)task);
-            }
-        }
+        printf("Error: invalid task '%s'.\n", input);
+        status = 1;
     }
 
     printf("\nPress Enter to exit...");

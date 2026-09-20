@@ -4,15 +4,6 @@
 #include <math.h>
 #include <stdio.h>
 
-static double rectangle_area(
-    const double x1,
-    const double y1,
-    const double x2,
-    const double y2
-) {
-    return fabs(x2 - x1) * fabs(y2 - y1);
-}
-
 void run_task4(void) {
     double coords[4] = {0.0};
 
@@ -37,7 +28,7 @@ void run_task4(void) {
 
     const double width = fabs(x2 - x1);
     const double height = fabs(y2 - y1);
-    const double area = rectangle_area(x1, y1, x2, y2);
+    const double area = width * height;
 
     if (area == 0.0) {
         puts(
