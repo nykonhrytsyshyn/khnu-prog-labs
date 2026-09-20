@@ -67,7 +67,10 @@ jobs:
       - name: "Setup: Install tools"
         run: |
           sudo apt-get update
-          sudo apt-get install -y cmake ninja-build clang-format make
+          sudo apt-get install -y cmake ninja-build make
+
+      - name: "Setup: Install clang-format"
+        run: "pipx install clang-format==22.1.8"
 
       - name: "Run: Clang-Format check"
         run: "make format-check"

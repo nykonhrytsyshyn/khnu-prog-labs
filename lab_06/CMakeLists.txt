@@ -26,6 +26,10 @@ add_executable(lab06
 
 target_include_directories(lab06 PRIVATE include)
 
+if (NOT MSVC)
+  target_link_libraries(lab06 PRIVATE m)
+endif ()
+
 if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/FormatTargets.cmake)
   add_format_targets(

@@ -33,5 +33,6 @@ endforeach ()
 include(${CMAKE_SOURCE_DIR}/cmake/FormatTargets.cmake)
 
 add_format_targets(
-        ${CMAKE_SOURCE_DIR}/*.c
-        ${CMAKE_SOURCE_DIR}/*.h)
+        "${CMAKE_SOURCE_DIR}/lab_*/*.c"
+        "${CMAKE_SOURCE_DIR}/lab_*/*.h"
+)
