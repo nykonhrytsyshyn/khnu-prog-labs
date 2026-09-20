@@ -4,7 +4,6 @@ BasedOnStyle: LLVM
 
 # Line length
 ColumnLimit: 80
-PenaltyBreakBeforeMemberAccess: 120
 PenaltyBreakComment: 80
 PenaltyBreakFirstLessLess: 80
 PenaltyReturnTypeOnItsOwnLine: 10000

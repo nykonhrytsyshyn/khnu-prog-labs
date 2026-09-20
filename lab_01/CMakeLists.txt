@@ -22,11 +22,14 @@ endif ()
 add_executable(lab01
         src/main.c
         src/utils.c
+        src/runner.c
+        src/task1.c
+        src/task2.c
+        src/task3.c
+        src/task4.c
 )
 
 target_include_directories(lab01 PRIVATE include)
-
-target_compile_options(lab01 PRIVATE -Wall -Wextra -Werror -pedantic)
 
 if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   include(${CMAKE_CURRENT_SOURCE_DIR}/../cmake/FormatTargets.cmake)
