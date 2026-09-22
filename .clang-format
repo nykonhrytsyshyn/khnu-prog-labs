@@ -1,27 +1,33 @@
+---
 Language: Cpp
-BasedOnStyle: Google
+BasedOnStyle: LLVM
 
 # Line length
 ColumnLimit: 80
+PenaltyBreakComment: 80
+PenaltyBreakFirstLessLess: 80
+PenaltyReturnTypeOnItsOwnLine: 10000
 
 # Indentation
-IndentWidth: 2
-TabWidth: 2
+IndentWidth: 4
+TabWidth: 4
 UseTab: Never
 
 # Braces
 BreakBeforeBraces: Attach
-AllowShortFunctionsOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: None
+AllowShortIfStatementsOnASingleLine: false
+AllowShortLoopsOnASingleLine: false
 
-# Pointers and references
-PointerAlignment: Left
+# Pointers
+PointerAlignment: Right
 DerivePointerAlignment: false
 
 # Alignment
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
-AlignOperands: Align
 AlignTrailingComments: true
+AlignAfterOpenBracket: BlockIndent
 
 # Spaces
 SpaceInEmptyParentheses: false
@@ -29,22 +35,31 @@ SpacesInAngles: false
 SpacesInConditionalStatement: false
 SpacesInCStyleCastParentheses: false
 SpacesInParentheses: false
+SpaceBeforeParens: ControlStatements
+SpaceAfterCStyleCast: false
 
 # Includes
 SortIncludes: CaseSensitive
 IncludeBlocks: Regroup
+IncludeCategories:
+  - Regex: '^".*"'
+    Priority: 1
+  - Regex: '^<.*>'
+    Priority: 2
 
 # Blocks
-IndentCaseBlocks: true
+IndentCaseBlocks: false
+IndentGotoLabels: true
+IndentCaseLabels: true
 NamespaceIndentation: None
 MaxEmptyLinesToKeep: 1
 
-# Templates
-AlwaysBreakTemplateDeclarations: Yes
-
-# Constructors
-BreakConstructorInitializers: BeforeComma
-ConstructorInitializerAllOnOneLineOrOnePerLine: false
+# Functions
+AlwaysBreakAfterReturnType: None
+BinPackParameters: false
+BinPackArguments: false
+AllowAllParametersOfDeclarationOnNextLine: false
 
 # Files
 InsertNewlineAtEOF: true
+...

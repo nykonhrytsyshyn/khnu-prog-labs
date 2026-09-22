@@ -28,3 +28,11 @@ foreach (DIR ${LAB_DIRS})
     add_subdirectory(${DIR})
   endif ()
 endforeach ()
+
+# Add formatting targets for all source and header files
+include(${CMAKE_SOURCE_DIR}/cmake/FormatTargets.cmake)
+
+add_format_targets(
+        "${CMAKE_SOURCE_DIR}/lab_*/*.c"
+        "${CMAKE_SOURCE_DIR}/lab_*/*.h"
+)
