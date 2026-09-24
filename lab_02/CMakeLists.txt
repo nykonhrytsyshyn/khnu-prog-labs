@@ -21,6 +21,11 @@ endif ()
 
 add_executable(lab02
         src/main.c
+        src/runner.c
+        src/task1.c
+        src/task2.c
+        src/task3.c
+        src/task4.c
         src/utils.c
 )
 
