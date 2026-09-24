@@ -3,6 +3,28 @@
 
 #include <stdio.h>
 
+static const char *get_point_location(const double x, const double y) {
+    const int x_is_zero = x == 0.0;
+    const int y_is_zero = y == 0.0;
+
+    if (x_is_zero && y_is_zero) {
+        return "The point is the origin.";
+    }
+
+    if (x_is_zero) {
+        return "The point lies on the Y axis.";
+    }
+
+    if (y_is_zero) {
+        return "The point lies on the X axis.";
+    }
+
+    return x > 0.0   ? y > 0.0 ? "The point belongs to quadrant I."
+                               : "The point belongs to quadrant IV."
+           : y > 0.0 ? "The point belongs to quadrant II."
+                     : "The point belongs to quadrant III.";
+}
+
 void run_task1(void) {
     double x = 0.0;
     double y = 0.0;
@@ -15,20 +37,5 @@ void run_task1(void) {
     }
 
     printf("\nPoint: (%.4f, %.4f)\n", x, y);
-
-    if (x == 0.0 && y == 0.0) {
-        puts("The point is the origin.");
-    } else if (x == 0.0) {
-        puts("The point lies on the Y axis.");
-    } else if (y == 0.0) {
-        puts("The point lies on the X axis.");
-    } else if (x > 0.0 && y > 0.0) {
-        puts("The point belongs to quadrant I.");
-    } else if (x < 0.0 && y > 0.0) {
-        puts("The point belongs to quadrant II.");
-    } else if (x < 0.0 && y < 0.0) {
-        puts("The point belongs to quadrant III.");
-    } else {
-        puts("The point belongs to quadrant IV.");
-    }
+    puts(get_point_location(x, y));
 }

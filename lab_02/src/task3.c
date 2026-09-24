@@ -3,15 +3,15 @@
 
 #include <stdio.h>
 
-// Table 2.1, variant 4:
-//   y = -5x + 2       for x < 0
-//   y = x^3 / 0.5     for x >= 0
-static double piecewise_function(const double x) {
-    if (x < 0.0) {
-        return -5.0 * x + 2.0;
-    }
+typedef struct {
+    double value;
+    const char *formula;
+} Result;
 
-    return x * x * x / 0.5;
+static Result calculate_piecewise(const double x) {
+    return x < 0.0
+               ? (Result){.value = -5.0 * x + 2.0, .formula = "y = -5x + 2"}
+               : (Result){.value = 2.0 * x * x * x, .formula = "y = x^3 / 0.5"};
 }
 
 void run_task3(void) {
@@ -25,9 +25,9 @@ void run_task3(void) {
         return;
     }
 
-    const double y = piecewise_function(x);
+    const Result result = calculate_piecewise(x);
 
     printf("\nx = %.4f\n", x);
-    printf("Branch used: %s\n", x < 0.0 ? "y = -5x + 2" : "y = x^3 / 0.5");
-    printf("y = %.4f\n", y);
+    printf("Branch used: %s\n", result.formula);
+    printf("y = %.4f\n", result.value);
 }

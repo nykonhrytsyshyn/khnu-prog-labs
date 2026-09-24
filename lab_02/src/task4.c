@@ -1,9 +1,17 @@
+#include "digits.h"
 #include "tasks.h"
 #include "utils.h"
 
 #include <stdio.h>
 
-enum { MIN_FOUR_DIGIT = 1000, MAX_FOUR_DIGIT = 9999 };
+Digits4 extract_digits4(const int num) {
+    return (Digits4){
+        .thousands = num / 1000,
+        .hundreds = num / 100 % 10,
+        .tens = num / 10 % 10,
+        .units = num % 10
+    };
+}
 
 void run_task4(void) {
     long n = 0;
@@ -24,13 +32,10 @@ void run_task4(void) {
         return;
     }
 
-    const long thousands = n / 1000;
-    const long hundreds = n / 100 % 10;
-    const long tens = n / 10 % 10;
-    const long units = n % 10;
-    const long sum = thousands + hundreds + tens;
+    const Digits4 d = extract_digits4((int)n);
+    const int sum = d.thousands + d.hundreds + d.tens;
 
     printf("\nN = %ld\n", n);
-    printf("Digits: %ld %ld %ld %ld\n", thousands, hundreds, tens, units);
-    printf("Sum of the first three digits: %ld\n", sum);
+    printf("Digits: %d %d %d %d\n", d.thousands, d.hundreds, d.tens, d.units);
+    printf("Sum of the first three digits: %d\n", sum);
 }

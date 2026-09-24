@@ -1,4 +1,5 @@
 #include "tasks.h"
+#include "utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,21 +14,15 @@ int main(void) {
         TASK_COUNT
     );
 
-    char input[32] = "";
-    if (fgets(input, sizeof(input), stdin) != NULL) {
-        input[strcspn(input, "\r\n")] = '\0';
-    }
-
-    char *end;
-    const long task = strtol(input, &end, 10);
+    long task;
     int status = 0;
 
-    if (input[0] == '\0') {
+    if (!read_long("", &task)) {
         run_all_tasks();
-    } else if (*end == '\0' && task >= 1 && task <= TASK_COUNT) {
+    } else if (task >= 1 && task <= TASK_COUNT) {
         run_task((int)task);
     } else {
-        printf("Error: invalid task '%s'.\n", input);
+        printf("Error: invalid task '%ld'.\n", task);
         status = 1;
     }
 
