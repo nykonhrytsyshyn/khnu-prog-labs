@@ -107,8 +107,8 @@ Ages outside `0...130` are rejected as input errors rather than classified.
 flowchart TD
   A(["Start"]) --> B[/"Input<br/>age"/]
   B --> C{"read_long(&age)"}
-  C -->|No| D[/"Output<br/>'Invalid input.'"/]
-  C -->|Yes| E{"age < 0 ||<br/>age > 130"}
+  C -->|Invalid| D[/"Output<br/>'Invalid input.'"/]
+  C -->|Valid| E{"age < 0 ||<br/>age > 130"}
   E -->|Yes| F[/"Output<br/>range error"/]
   E -->|No| G{"age <= 6"}
   G -->|Yes| H[/"Output<br/>'preschooler'"/]
