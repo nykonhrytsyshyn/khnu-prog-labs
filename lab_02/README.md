@@ -1,6 +1,6 @@
 # Lab 02 - Branched algorithms
 
-Assignment: [docs/task.pdf](docs/task.pdf)
+[Assignment](docs/lw-task-02.pdf) · [Report](docs/lw-report-02.pdf)
 
 Variant 9. The goal of the lab is to get familiar with the `if` / `else`
 conditional operator, including nested conditionals, and to describe each
