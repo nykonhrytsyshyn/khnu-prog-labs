@@ -46,7 +46,7 @@ flowchart TD
   F --> H
   G --> H
 
-  classDef stage fill:#363636,stroke:#666,color:#fff,rx:6,ry:6
+   classDef stage stroke:#666,rx:6,ry:6
   class A,B,C,D,E,F,G,H stage
 ```
 
@@ -83,7 +83,7 @@ flowchart TD
   P --> R
   Q --> R
 
-  classDef stage fill:#363636,stroke:#666,color:#fff,rx:6,ry:6
+   classDef stage stroke:#666,rx:6,ry:6
   class A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R stage
 ```
 
@@ -124,7 +124,7 @@ flowchart TD
   L --> N
   M --> N
 
-  classDef stage fill:#363636,stroke:#666,color:#fff,rx:6,ry:6
+   classDef stage stroke:#666,rx:6,ry:6
   class A,B,C,D,E,F,G,H,I,J,K,L,M,N stage
 ```
 
@@ -152,7 +152,7 @@ flowchart TD
   D --> I(["Stop"])
   H --> I
 
-  classDef stage fill:#363636,stroke:#666,color:#fff,rx:6,ry:6
+   classDef stage stroke:#666,rx:6,ry:6
   class A,B,C,D,E,F,G,H,I stage
 ```
 
@@ -176,7 +176,7 @@ flowchart TD
   F --> J
   I --> J
 
-  classDef stage fill:#363636,stroke:#666,color:#fff,rx:6,ry:6
+   classDef stage stroke:#666,rx:6,ry:6
   class A,B,C,D,E,F,G,H,I,J stage
 ```
 
