@@ -10,7 +10,7 @@ presets so the same short commands work on Windows and Linux.
 
 ```
 .
-├── .github/workflows/   # build + format check
+├── .github/workflows/   # build + format check + releasing (see RELEASING.md)
 ├── cmake/               # shared CMake modules (format targets)
 ├── lab_NN/              # each lab is a separate subproject [NN = 01, 02, ...]
 │   ├── docs/              # Task description and other lab-specific docs
@@ -88,3 +88,8 @@ make <target> [LAB=<n>] [PRESET=debug|release]
 > Every `lab_NN/` also has its own `Makefile` with the same targets (except
 > `LAB`), so a lab can be built on its own by running `make` from inside its
 > directory. `make <target> LAB=<n>` from the root simply forwards there.
+
+## Releasing
+
+Each finished lab gets its own GitHub Release (binaries + report PDF), automated
+from `dev` -> `release`. See [RELEASING.md](RELEASING.md).

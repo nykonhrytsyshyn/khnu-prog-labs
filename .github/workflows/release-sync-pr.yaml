@@ -1,0 +1,71 @@
+# ============================================================================ #
+#                           Release Sync PR Workflow                           #
+# ============================================================================ #
+# Keeps a single "dev -> release" pull request open whenever dev has commits   #
+# release doesn't. This PR is NOT lab-specific - it carries everything         #
+# accumulated on dev. Whether merging it also cuts a GitHub Release is decided #
+# at merge time by a label - see "RELEASING.md".                               #
+# ============================================================================ #
+
+name: "Releasing: Sync PR"
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["dev"]
+
+concurrency:
+  group: "release-sync-${{ github.workflow }}"
+  cancel-in-progress: false
+
+permissions:
+  contents: "read"
+
+jobs:
+  sync-pr:
+    name: "Open dev -> release PR"
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 5
+
+    permissions:
+      contents: "read"
+      pull-requests: "write"
+
+    steps:
+      - name: "Setup: Checkout repository"
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: "Setup: Fetch branches"
+        run: "git fetch origin dev release"
+
+      - name: "Run: Check dev is ahead of release"
+        id: "diff"
+        run: |
+          AHEAD=$(git rev-list --count origin/release..origin/dev)
+          echo "ahead=$AHEAD" >> "$GITHUB_OUTPUT"
+          echo "dev is $AHEAD commit(s) ahead of release"
+
+      - name: "Run: Open pull request if none is open"
+        if: steps.diff.outputs.ahead != '0'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          EXISTING=$(gh pr list --base release --head dev --state open --json number --jq '.[0].number')
+
+          if [ -n "$EXISTING" ]; then
+            echo "PR #$EXISTING is already open, nothing to do."
+            exit 0
+          fi
+
+          gh pr create \
+            --base release \
+            --head dev \
+            --title "chore: sync dev into release" \
+            --body "Automated: promotes the accumulated changes on \`dev\` to \`release\`.
+
+          - Add the \`Release\` label before merging to also cut a draft GitHub Release for whichever \`lab_NN/\` changed.
+          - Merge without it to just sync these changes into \`release\` (e.g. a CI or shared-config change) - no release is created.
+
+          See RELEASING.md."
