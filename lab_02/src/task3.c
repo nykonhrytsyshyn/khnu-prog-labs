@@ -17,7 +17,7 @@ static Result calculate_piecewise(const double x) {
 void run_task3(void) {
     double x = 0.0;
 
-    puts("\n=== Task 3: piecewise function (Table 2.1, variant 4) ===\n");
+    puts("\n=== Task 3: piecewise function ===\n");
     puts("Formula: y = -5x + 2 for x < 0, y = x^3 / 0.5 for x >= 0");
 
     if (!read_double("Enter x: ", &x)) {

@@ -19,10 +19,10 @@ static const char *get_point_location(const double x, const double y) {
         return "The point lies on the X axis.";
     }
 
-    return x > 0.0   ? y > 0.0 ? "The point belongs to quadrant I."
-                               : "The point belongs to quadrant IV."
-           : y > 0.0 ? "The point belongs to quadrant II."
-                     : "The point belongs to quadrant III.";
+    return x > 0.0 ? (y > 0.0 ? "The point belongs to quadrant I."
+                              : "The point belongs to quadrant IV.")
+                   : (y > 0.0 ? "The point belongs to quadrant II."
+                              : "The point belongs to quadrant III.");
 }
 
 void run_task1(void) {

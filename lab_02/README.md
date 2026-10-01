@@ -111,22 +111,17 @@ Ages outside `0...130` are rejected as input errors rather than classified.
 flowchart TD
   A(["Start"]) --> B[/"Input<br/>age"/]
   B --> C{"read_long(&age)"}
-  C -->|Invalid| D[/"Output<br/>'Invalid input.'"/]
-  C -->|Valid| E{"age < 0 ||<br/>age > 130"}
-  E -->|Yes| F[/"Output<br/>range error"/]
-  E -->|No| G{"age <= 6"}
-  G -->|Yes| H[/"Output<br/>'preschooler'"/]
-  G -->|No| I{"age <= 17"}
-  I -->|Yes| J[/"Output<br/>'schoolboy'"/]
-  I -->|No| K{"age <= 59"}
-  K -->|Yes| L[/"Output<br/>'worker'"/]
-  K -->|No| M[/"Output<br/>'pensioner'"/]
-  D --> N(["Stop"])
-  F --> N
-  H --> N
-  J --> N
-  L --> N
-  M --> N
+  C -->|Invalid| D[/"Output<br/>'Invalid input format.'"/]
+  C -->|Valid| E{"0 <= age &&<br/>age <= 130"}
+  E -->|No| F[/"Output<br/>range error"/]
+  E -->|Yes| G["i = 0"]
+  G --> H{"age <= AGE_RULES[i].max_age"}
+  H -->|Yes| I[/"Output<br/>AGE_RULES[i].name"/]
+  H -->|No| J["i = i + 1"]
+  J --> H
+  D --> K(["Stop"])
+  F --> K
+  I --> K
 
   classDef stage stroke:#666,rx:6,ry:6
   class A,B,C,D,E,F,G,H,I,J,K stage

@@ -5,21 +5,31 @@
 #include <stdio.h>
 
 AgeGroup classify_age(const long age) {
-    return age < 0 || age > MAX_PLAUSIBLE_AGE ? AGE_GROUP_INVALID
-           : age <= PRESCHOOLER_MAX_AGE       ? AGE_GROUP_PRESCHOOLER
-           : age <= SCHOOLBOY_MAX_AGE         ? AGE_GROUP_SCHOOLBOY
-           : age <= WORKER_MAX_AGE            ? AGE_GROUP_WORKER
-                                              : AGE_GROUP_PENSIONER;
+    if (age < MIN_PLAUSIBLE_AGE || age > MAX_PLAUSIBLE_AGE) {
+        return AGE_GROUP_INVALID;
+    }
+
+    for (size_t i = 0; i < RULES_COUNT; ++i) {
+        const AgeGroupRule rule = AGE_RULES[i];
+
+        if (age <= rule.max_age) {
+            return rule.group;
+        }
+    }
+
+    return AGE_GROUP_INVALID;
 }
 
 const char *age_group_to_str(const AgeGroup group) {
-    switch (group) {
-        case AGE_GROUP_PRESCHOOLER: return "preschooler";
-        case AGE_GROUP_SCHOOLBOY: return "schoolboy";
-        case AGE_GROUP_WORKER: return "worker";
-        case AGE_GROUP_PENSIONER: return "pensioner";
-        default: return "unknown";
+    for (size_t i = 0; i < RULES_COUNT; ++i) {
+        const AgeGroupRule rule = AGE_RULES[i];
+
+        if (group == rule.group) {
+            return rule.name;
+        }
     }
+
+    return "invalid";
 }
 
 void run_task2(void) {
@@ -35,7 +45,11 @@ void run_task2(void) {
     const AgeGroup group = classify_age(age);
 
     if (group == AGE_GROUP_INVALID) {
-        printf("Error: age must be between 0 and %d.\n", MAX_PLAUSIBLE_AGE);
+        printf(
+            "Error: age must be between %d and %d.\n",
+            MIN_PLAUSIBLE_AGE,
+            MAX_PLAUSIBLE_AGE
+        );
         return;
     }
 
