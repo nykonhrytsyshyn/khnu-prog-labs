@@ -121,3 +121,68 @@ bool read_longs(const char *prompt, const size_t count, ...) {
 
     return read_line_values(prompt, count, outs, parse_long_token);
 }
+
+static bool equals_ignore_case(
+    const char *str,
+    const size_t len,
+    const char *word
+) {
+    if (strlen(word) != len) {
+        return false;
+    }
+
+    for (size_t i = 0; i < len; ++i) {
+        if (tolower((unsigned char)str[i]) != word[i]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool confirm(const char *prompt, const bool default_answer) {
+    char buffer[16];
+
+    while (true) {
+        if (prompt != NULL) {
+            printf("%s", prompt);
+        }
+
+        if (fgets(buffer, sizeof(buffer), stdin) == NULL) {
+            return false;
+        }
+
+        const bool overflow = strchr(buffer, '\n') == NULL && !feof(stdin);
+        if (overflow) {
+            int ch;
+            while ((ch = getchar()) != '\n' && ch != EOF)
+                ;
+        } else {
+            const char *start = buffer;
+            while (isspace((unsigned char)*start)) {
+                start++;
+            }
+
+            size_t len = strlen(start);
+            while (len > 0 && isspace((unsigned char)start[len - 1])) {
+                len--;
+            }
+
+            if (len == 0) {
+                return default_answer;
+            }
+
+            if (equals_ignore_case(start, len, "y") ||
+                equals_ignore_case(start, len, "yes")) {
+                return true;
+            }
+
+            if (equals_ignore_case(start, len, "n") ||
+                equals_ignore_case(start, len, "no")) {
+                return false;
+            }
+        }
+
+        printf("Please answer 'y' or 'n'.\n");
+    }
+}

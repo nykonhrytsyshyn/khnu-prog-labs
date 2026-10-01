@@ -12,7 +12,7 @@ algorithm with a block diagram before writing the code.
 |------|-----------------------------------------------------------------------------|
 | 1    | Which quadrant (or axis, or the origin) a point `(x, y)` belongs to         |
 | 2    | Classifies a person's age into preschooler / schoolboy / worker / pensioner |
-| 3    | Evaluates a piecewise function of `x` (Table 2.1, variant 4)                |
+| 3    | Evaluates a piecewise function of `x`                                       |
 | 4    | Sum of the first three digits of a four-digit integer `N`                   |
 
 ### Project layout
@@ -23,7 +23,7 @@ lab_02/
 │   ├── age.h     # AgeGroup enum, classify_age(), age_group_to_str() (Task 2)
 │   ├── digits.h  # Digits4 struct, extract_digits4() (Task 4)
 │   ├── tasks.h   # task registry (X-macro), TASK_COUNT, run_task() / run_all_tasks()
-│   └── utils.h   # read_double() / read_doubles() / read_long() / read_longs()
+│   └── utils.h   # read_double(s) / read_long(s) / confirm()
 └── src/
     ├── main.c    # menu, task number parsing
     ├── runner.c  # dispatches to run_task1() ... run_task4()
@@ -38,16 +38,20 @@ lab_02/
 flowchart TD
   A(["Start"]) --> B[/"Input<br/>task"/]
   B --> C{"read_long(&task) == '\0'"}
-  C -->|Yes| D["run_all_tasks()"]
+  C -->|Yes| D["run_task(i)<br/>(all tasks in order)"]
   C -->|No| E{"1 <= task <= TASK_COUNT"}
   E -->|Yes| F["run_task(task)"]
   E -->|No| G["status = 1"]
-  D --> H(["Stop"])
+  D --> M{"Next task<br/>exists?"}
+  M -->|No| H(["Stop"])
+  M -->|Yes| N[/"Ask 'Proceed to<br/>next task? (Y/n)'"/]
+  N -->|"Yes (default)"| D
+  N -->|No| H
   F --> H
   G --> H
 
-   classDef stage stroke:#666,rx:6,ry:6
-  class A,B,C,D,E,F,G,H stage
+  classDef stage stroke:#666,rx:6,ry:6
+  class A,B,C,D,E,F,G,H,M,N stage
 ```
 
 ## Task 1 - Quadrant of a point
@@ -83,7 +87,7 @@ flowchart TD
   P --> R
   Q --> R
 
-   classDef stage stroke:#666,rx:6,ry:6
+  classDef stage stroke:#666,rx:6,ry:6
   class A,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R stage
 ```
 
@@ -124,11 +128,11 @@ flowchart TD
   L --> N
   M --> N
 
-   classDef stage stroke:#666,rx:6,ry:6
-  class A,B,C,D,E,F,G,H,I,J,K,L,M,N stage
+  classDef stage stroke:#666,rx:6,ry:6
+  class A,B,C,D,E,F,G,H,I,J,K stage
 ```
 
-## Task 3 - Piecewise function (Table 2.1, variant 4)
+## Task 3 - Piecewise function
 
 ```
 y = -5x + 2       for x < 0
@@ -152,7 +156,7 @@ flowchart TD
   D --> I(["Stop"])
   H --> I
 
-   classDef stage stroke:#666,rx:6,ry:6
+  classDef stage stroke:#666,rx:6,ry:6
   class A,B,C,D,E,F,G,H,I stage
 ```
 
@@ -176,7 +180,7 @@ flowchart TD
   F --> J
   I --> J
 
-   classDef stage stroke:#666,rx:6,ry:6
+  classDef stage stroke:#666,rx:6,ry:6
   class A,B,C,D,E,F,G,H,I,J stage
 ```
 

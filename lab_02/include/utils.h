@@ -8,5 +8,6 @@ bool read_double(const char *prompt, double *out_value);
 bool read_doubles(const char *prompt, size_t count, ...);
 bool read_long(const char *prompt, long *out_value);
 bool read_longs(const char *prompt, size_t count, ...);
+bool confirm(const char *prompt, bool default_answer);
 
 #endif // UTILS_H
