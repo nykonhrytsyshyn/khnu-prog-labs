@@ -1,0 +1,266 @@
+# ============================================================================ #
+#                            Release Draft Workflow                            #
+# ============================================================================ #
+# Runs on every push to "release" - i.e. right after the dev -> release PR     #
+# opened by "release-sync-pr.yaml" is merged, of any kind (labeled or not).    #
+#                                                                              #
+# 1. sync-back - always runs. Merges release's new tip back into dev so the    #
+#                two branches never desync at the commit-graph level, no       #
+#                matter which merge strategy (merge/squash/rebase) was used on #
+#                the PR. Without this, a squash-merged PR makes future         #
+#                "is dev ahead of release" checks in "release-sync-pr.yaml"    #
+#                wrong forever.                                                #
+# 2. gate      - was the merged PR labeled "Release"? If not, sync-back is all #
+#                that happens.                                                 #
+# 3. detect    - (only if gated true) diffs the push to find which "lab_NN/"   #
+#                director(y/ies) changed.                                      #
+# 4. build     - for each changed lab, compiles it as its own standalone CMake #
+#                project natively on Linux, Windows and macOS runners and      #
+#                uploads each binary as a build artifact.                      #
+# 5. release   - downloads that lab's binaries, copies every *.pdf from        #
+#                "lab_NN/docs" as-is, and opens a DRAFT GitHub Release titled  #
+#                after lab_NN/README.md's first `# ` heading, verbatim,        #
+#                tagged "lab-NN".                                              #
+# ============================================================================ #
+
+name: "Releasing: Draft Release"
+
+on:
+  workflow_dispatch:
+    inputs:
+      labs:
+        description: |
+          Comma-separated lab numbers to (re)build/release, e.g. 01,02. Leave
+          empty to auto-detect from the last push to release.
+        required: false
+        type: "string"
+  push:
+    branches: ["release"]
+
+concurrency:
+  group: "release-draft-${{ github.ref }}"
+  cancel-in-progress: false
+
+permissions:
+  contents: "read"
+
+jobs:
+  # Always sync release's tip back into dev, no matter what
+  sync-back:
+    name: "Sync release back into dev"
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 5
+
+    permissions:
+      contents: "write"
+
+    steps:
+      - name: "Setup: Checkout dev"
+        uses: actions/checkout@v7
+        with:
+          ref: "dev"
+          fetch-depth: 0
+
+      - name: "Run: Merge release into dev"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin release
+
+          if git merge-base --is-ancestor origin/release HEAD; then
+            echo "dev already contains release's tip, nothing to do."
+            exit 0
+          fi
+
+          git merge --no-edit origin/release
+          git push origin dev
+
+  # Only continue if the merged PR was labeled "Release"
+  gate:
+    name: "Check for the 'Release' label"
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 5
+    outputs:
+      should_release: "${{ steps.check.outputs.should_release }}"
+
+    steps:
+      - name: "Run: Decide whether to cut a release"
+        id: "check"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "Manual dispatch - skipping the label check."
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          LABELS=$(gh api "repos/${{ github.repository }}/commits/${{ github.sha }}/pulls" \
+            --jq '[.[] | select(.base.ref == "release") | .labels[].name] | join(",")')
+
+          echo "Merged PR label(s): ${LABELS:-<none>}"
+
+          if echo ",$LABELS," | grep -q ",Release,"; then
+            echo "should_release=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_release=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  # Only continue if the merged PR was labeled "Release" and there are changed
+  # labs
+  detect:
+    name: "Detect Changed Labs"
+    needs: "gate"
+    if: needs.gate.outputs.should_release == 'true'
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 5
+    outputs:
+      labs: "${{ steps.labs.outputs.labs }}"
+
+    steps:
+      - name: "Setup: Checkout repository"
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: "Run: Detect changed lab directories"
+        id: "labs"
+        run: |
+          if [ -n "${{ inputs.labs }}" ]; then
+            LABS=$(echo "${{ inputs.labs }}" | tr ',' '\n' | sed 's/^ *//; s/ *$//' | grep -v '^$' | jq -R . | jq -sc .)
+            echo "labs=$LABS" >> "$GITHUB_OUTPUT"
+            echo "Using manually specified labs: $LABS"
+            exit 0
+          fi
+
+          BEFORE="${{ github.event.before }}"
+          AFTER="${{ github.event.after || github.sha }}"
+
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            BEFORE="HEAD~1"
+          fi
+
+          CHANGED=$(git diff --name-only "$BEFORE" "$AFTER" -- 'lab_*/' 2>/dev/null \
+            | cut -d/ -f1 | sort -u | sed -n 's/^lab_//p')
+
+          if [ -z "$CHANGED" ]; then
+            LABS="[]"
+          else
+            LABS=$(printf '%s\n' "$CHANGED" | jq -R . | jq -sc .)
+          fi
+
+          echo "labs=$LABS" >> "$GITHUB_OUTPUT"
+          echo "Changed labs: $LABS"
+
+  # Compile each changed lab on Linux, Windows and macOS runners, and upload
+  # each binary as a build artifact
+  build:
+    name: "Build lab${{ matrix.lab }} (${{ matrix.target.label }})"
+    needs: "detect"
+    if: needs.detect.outputs.labs != '[]'
+    runs-on: "${{ matrix.target.os }}"
+    timeout-minutes: 15
+
+    strategy:
+      fail-fast: false
+      matrix:
+        lab: ${{ fromJSON(needs.detect.outputs.labs) }}
+        target:
+          - { os: "ubuntu-latest",  label: "linux",   ext: ""     }
+          - { os: "windows-latest", label: "windows", ext: ".exe" }
+          - { os: "macos-latest",   label: "macos",   ext: ""     }
+
+    steps:
+      - name: "Setup: Checkout repository"
+        uses: actions/checkout@v7
+
+      - name: "Setup: Build tools (Linux)"
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake ninja-build gcc
+
+      - name: "Setup: Build tools (macOS)"
+        if: runner.os == 'macOS'
+        run: "brew install ninja"
+
+      - name: "Setup: MSVC dev environment (Windows)"
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: "Run: Configure"
+        working-directory: "lab_${{ matrix.lab }}"
+        run: "cmake --preset release"
+
+      - name: "Run: Build"
+        working-directory: "lab_${{ matrix.lab }}"
+        run: "cmake --build --preset release"
+
+      - name: "Run: Package binary"
+        shell: bash
+        run: |
+          SRC="lab_${{ matrix.lab }}/build/release/lab${{ matrix.lab }}${{ matrix.target.ext }}"
+          DEST="lab${{ matrix.lab }}-${{ matrix.target.label }}-x86_64${{ matrix.target.ext }}"
+          cp "$SRC" "$DEST"
+
+      - name: "Upload: Binary artifact"
+        uses: actions/upload-artifact@v7
+        with:
+          name: "lab${{ matrix.lab }}-${{ matrix.target.label }}-x86_64"
+          path: "lab${{ matrix.lab }}-${{ matrix.target.label }}-x86_64${{ matrix.target.ext }}"
+          if-no-files-found: "error"
+
+  # Download each lab's binaries, copy any PDFs from "lab_NN/docs", and open a
+  # draft release for each changed lab
+  release:
+    name: "Draft Release: lab${{ matrix.lab }}"
+    needs: ["detect", "build"]
+    runs-on: "ubuntu-latest"
+    timeout-minutes: 10
+
+    permissions:
+      contents: "write"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        lab: ${{ fromJSON(needs.detect.outputs.labs) }}
+
+    steps:
+      - name: "Setup: Checkout repository"
+        uses: actions/checkout@v7
+
+      - name: "Setup: Download binaries"
+        uses: actions/download-artifact@v8
+        with:
+          pattern: "lab${{ matrix.lab }}-*"
+          path: "assets"
+          merge-multiple: true
+
+      - name: "Run: Collect PDFs"
+        run: |
+          shopt -s nullglob
+          PDFS=("lab_${{ matrix.lab }}/docs/"*.pdf)
+
+          if [ "${#PDFS[@]}" -gt 0 ]; then
+            cp "${PDFS[@]}" assets/
+          else
+            echo "::warning::No PDF files found in lab_${{ matrix.lab }}/docs - skipping."
+          fi
+
+      - name: "Run: Read release title"
+        id: "info"
+        run: |
+          TITLE=$(grep -m1 '^# ' "lab_${{ matrix.lab }}/README.md" | sed 's/^# //')
+          echo "title=$TITLE" >> "$GITHUB_OUTPUT"
+
+      - name: "Run: Create draft release"
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: "lab-${{ matrix.lab }}"
+          name: "${{ steps.info.outputs.title }}"
+          target_commitish: "release"
+          draft: true
+          files: "assets/*"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

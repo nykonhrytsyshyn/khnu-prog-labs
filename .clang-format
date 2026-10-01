@@ -16,8 +16,9 @@ UseTab: Never
 # Braces
 BreakBeforeBraces: Attach
 AllowShortFunctionsOnASingleLine: None
-AllowShortIfStatementsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: Never
 AllowShortLoopsOnASingleLine: false
+AllowShortCaseLabelsOnASingleLine: true
 
 # Pointers
 PointerAlignment: Right
