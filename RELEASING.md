@@ -32,12 +32,21 @@ flowchart TD
 | Push to `dev`                           | `release-sync-pr.yaml`                        | Opens the `dev -> release` PR if `dev` is ahead and none is open yet. No path filter - any change on `dev` counts                   |
 | PR into `release` merged (any strategy) | `release-draft.yaml` / `sync-back`            | Always merges `release`'s new tip back into `dev`, so the branches never desync at the commit-graph level even after a squash merge |
 | ...same, PR had no `Release` label      | `release-draft.yaml` / `gate`                 | Stops after `sync-back`. Nothing built, no release                                                                                  |
-| ...same, PR had the `Release` label     | `release-draft.yaml` / `detect,build,release` | Diffs the merge for changed `lab_NN/`, builds it on 3 OSes, opens a draft Release per changed lab                                   |
+| ...same, PR had the `Release` label     | `release-draft.yaml` / `detect,build,release` | Diffs every commit the merge added to `release` for changed `lab_NN/`, builds on 3 OSes, opens a draft Release per changed lab      |
 | Manual run, `labs` input given          | `release-draft.yaml`                          | Skips the label check and the diff, builds/releases exactly the labs you typed                                                      |
+| Manual run, `labs` input empty          | `release-draft.yaml`                          | Skips the label check, diffs everything since the previous PR merged into `release` (all labs if there was none)                    |
 
 > [!IMPORTANT]
 > The `Release` label must exist in the repo already (Issues/PRs -> Labels ->
 > New label, one-time setup) before you can add it to a PR.
+
+> [!NOTE]
+> Which commits count: on a push to `release` the diff is `before..after` of the
+> push, so every commit of the merge is covered (merge commit, squash or rebase).
+> A manual run without `labs` has no `before`, so it starts from the tip of
+> `release` right after the previous merged PR (looked up through the API) and
+> covers everything since. If no PR was ever merged into `release`, it starts
+> from the empty tree and every lab counts.
 
 > [!IMPORTANT]
 > A merge touching more than one `lab_NN/` at once produces one draft per
@@ -45,24 +54,25 @@ flowchart TD
 
 ## Where each value comes from
 
-| Value in the draft release | Source                                                                                                                                                       |
-|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Title                      | `lab_NN/README.md`'s first `# ` heading, used verbatim (e.g. `# Lab 01 - Linear algorithms` -> title `Lab 01 - Linear algorithms`)                           |
-| Tag                        | `lab-NN`, from the `lab_NN/` directory name - not parsed from the README                                                                                     |
-| `labNN-<os>-x86_64[.exe]`  | Built from `lab_NN/build/release/labNN[.exe]` via `cmake --preset release` inside `lab_NN/`, natively on `ubuntu-latest`, `windows-latest`, `macos-latest`   |
-| PDF assets                 | Every `*.pdf` in `lab_NN/docs/` (report, task, anything else), copied as-is under their original filenames. Skipped (with a `::warning::`) if there are none |
+| Value in the draft release | Source                                                                                                                                                                                                                 |
+|----------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Title                      | `lab_NN/README.md`'s first `# ` heading, used verbatim (e.g. `# Lab 01 - Linear algorithms` -> title `Lab 01 - Linear algorithms`)                                                                                     |
+| Tag                        | `lab-NN`, from the `lab_NN/` directory name - not parsed from the README                                                                                                                                               |
+| `labNN-<os>-<arch>[.exe]`  | Built from `lab_NN/build/release/labNN[.exe]` via `cmake --preset release` inside `lab_NN/`, natively on `ubuntu-latest`, `windows-latest`, `macos-latest`. `<arch>` is `x86_64` on Linux/Windows and `arm64` on macOS |
+| PDF assets                 | Every `*.pdf` in `lab_NN/docs/` (report, task, anything else), copied as-is under their original filenames. Skipped (with a `::warning::`) if there are none                                                           |
 
 ## Tokens / permissions
 
 Everything runs on the default `GITHUB_TOKEN`:
 
-| Job         | Needs                      | Why                                               |
-|-------------|----------------------------|---------------------------------------------------|
-| `sync-pr`   | `pull-requests: write`     | Opens the promotion PR                            |
-| `sync-back` | `contents: write`          | Pushes the merge commit directly to `dev`         |
-| `gate`      | default (`contents: read`) | `gh api .../pulls` to read the merged PR's labels |
-| `build`     | default (`contents: read`) | Just checks out and compiles                      |
-| `release`   | `contents: write`          | Creates the draft release + uploads assets        |
+| Job         | Needs                                   | Why                                                               |
+|-------------|-----------------------------------------|-------------------------------------------------------------------|
+| `sync-pr`   | `pull-requests: write`                  | Opens the promotion PR                                            |
+| `sync-back` | `contents: write`                       | Pushes the merge commit directly to `dev`                         |
+| `gate`      | default (`contents: read`)              | `gh api .../pulls` to read the merged PR's labels                 |
+| `detect`    | `contents: read`, `pull-requests: read` | Manual runs list merged PRs into `release` to find the diff start |
+| `build`     | default (`contents: read`)              | Just checks out and compiles                                      |
+| `release`   | `contents: write`                       | Creates the draft release + uploads assets                        |
 
 > [!WARNING]
 > `sync-back` pushes straight to `dev`, bypassing PRs. If `dev` has a branch

@@ -12,8 +12,10 @@
 #                wrong forever.                                                #
 # 2. gate      - was the merged PR labeled "Release"? If not, sync-back is all #
 #                that happens.                                                 #
-# 3. detect    - (only if gated true) diffs the push to find which "lab_NN/"   #
-#                director(y/ies) changed.                                      #
+# 3. detect    - (only if gated true) diffs the push (every commit between the #
+#                old and the new tip of release) to find which "lab_NN/"       #
+#                director(y/ies) changed. A manual run without input diffs     #
+#                everything since the previous PR merged into release.         #
 # 4. build     - for each changed lab, compiles it as its own standalone CMake #
 #                project natively on Linux, Windows and macOS runners and      #
 #                uploads each binary as a build artifact.                      #
@@ -31,7 +33,8 @@ on:
       labs:
         description: |
           Comma-separated lab numbers to (re)build/release, e.g. 01,02. Leave
-          empty to auto-detect from the last push to release.
+          empty to auto-detect: every lab changed since the previous PR was
+          merged into release (all labs if there was none).
         required: false
         type: "string"
   push:
@@ -114,6 +117,11 @@ jobs:
     if: needs.gate.outputs.should_release == 'true'
     runs-on: "ubuntu-latest"
     timeout-minutes: 5
+
+    permissions:
+      contents: "read"
+      pull-requests: "read"
+
     outputs:
       labs: "${{ steps.labs.outputs.labs }}"
 
@@ -125,30 +133,48 @@ jobs:
 
       - name: "Run: Detect changed lab directories"
         id: "labs"
+        shell: "bash"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          INPUT_LABS: ${{ inputs.labs }}
+          EVENT_BEFORE: ${{ github.event.before }}
+          EVENT_AFTER: ${{ github.event.after || github.sha }}
         run: |
-          if [ -n "${{ inputs.labs }}" ]; then
-            LABS=$(echo "${{ inputs.labs }}" | tr ',' '\n' | sed 's/^ *//; s/ *$//' | grep -v '^$' | jq -R . | jq -sc .)
+          if [ -n "$INPUT_LABS" ]; then
+            LABS=$(echo "$INPUT_LABS" | tr ',' '\n' | sed 's/^ *//; s/ *$//' | { grep -v '^$' || true; } | jq -R . | jq -sc .)
             echo "labs=$LABS" >> "$GITHUB_OUTPUT"
             echo "Using manually specified labs: $LABS"
             exit 0
           fi
 
-          BEFORE="${{ github.event.before }}"
-          AFTER="${{ github.event.after || github.sha }}"
+          BEFORE="$EVENT_BEFORE"
+          AFTER="$EVENT_AFTER"
 
           if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
-            BEFORE="HEAD~1"
+            BASE=""
+            for SHA in $(gh api "repos/$REPO/pulls?state=closed&base=release&sort=updated&direction=desc&per_page=100" \
+              --jq '[.[] | select(.merged_at != null)] | sort_by(.merged_at) | reverse | .[].merge_commit_sha'); do
+              if [ "$SHA" != "$AFTER" ] && git merge-base --is-ancestor "$SHA" "$AFTER" 2>/dev/null; then
+                BASE="$SHA"
+                break
+              fi
+            done
+
+            BEFORE="${BASE:-$(git hash-object -t tree /dev/null)}"
           fi
 
-          CHANGED=$(git diff --name-only "$BEFORE" "$AFTER" -- 'lab_*/' 2>/dev/null \
-            | cut -d/ -f1 | sort -u | sed -n 's/^lab_//p')
+          FILES=$(git diff --name-only --diff-filter=d "$BEFORE" "$AFTER")
+          CHANGED=$(printf '%s\n' "$FILES" | sed -n 's|^lab_\([0-9][0-9]*\)/.*|\1|p' | sort -u)
 
           if [ -z "$CHANGED" ]; then
             LABS="[]"
+            echo "::warning::No changes under lab_NN/ between $BEFORE and $AFTER - nothing to release."
           else
             LABS=$(printf '%s\n' "$CHANGED" | jq -R . | jq -sc .)
           fi
 
+          echo "Range: $BEFORE..$AFTER"
           echo "labs=$LABS" >> "$GITHUB_OUTPUT"
           echo "Changed labs: $LABS"
 
@@ -166,9 +192,9 @@ jobs:
       matrix:
         lab: ${{ fromJSON(needs.detect.outputs.labs) }}
         target:
-          - { os: "ubuntu-latest",  label: "linux",   ext: ""     }
-          - { os: "windows-latest", label: "windows", ext: ".exe" }
-          - { os: "macos-latest",   label: "macos",   ext: ""     }
+          - { os: "ubuntu-latest",  label: "linux",   arch: "x86_64", ext: ""     }
+          - { os: "windows-latest", label: "windows", arch: "x86_64", ext: ".exe" }
+          - { os: "macos-latest",   label: "macos",   arch: "arm64",  ext: ""     }
 
     steps:
       - name: "Setup: Checkout repository"
@@ -200,14 +226,14 @@ jobs:
         shell: bash
         run: |
           SRC="lab_${{ matrix.lab }}/build/release/lab${{ matrix.lab }}${{ matrix.target.ext }}"
-          DEST="lab${{ matrix.lab }}-${{ matrix.target.label }}-x86_64${{ matrix.target.ext }}"
+          DEST="lab${{ matrix.lab }}-${{ matrix.target.label }}-${{ matrix.target.arch }}${{ matrix.target.ext }}"
           cp "$SRC" "$DEST"
 
       - name: "Upload: Binary artifact"
         uses: actions/upload-artifact@v7
         with:
-          name: "lab${{ matrix.lab }}-${{ matrix.target.label }}-x86_64"
-          path: "lab${{ matrix.lab }}-${{ matrix.target.label }}-x86_64${{ matrix.target.ext }}"
+          name: "lab${{ matrix.lab }}-${{ matrix.target.label }}-${{ matrix.target.arch }}"
+          path: "lab${{ matrix.lab }}-${{ matrix.target.label }}-${{ matrix.target.arch }}${{ matrix.target.ext }}"
           if-no-files-found: "error"
 
   # Download each lab's binaries, copy any PDFs from "lab_NN/docs", and open a
