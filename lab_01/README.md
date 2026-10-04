@@ -1,6 +1,6 @@
 # Lab 01 - Linear algorithms
 
-Assignment: [docs/task.pdf](docs/task.pdf)
+[Assignment](docs/lw-task-01.pdf) · [Report](docs/lw-report-01.pdf)
 
 Variant 9. The goal of the lab is to get familiar with the structure of a C
 program, console I/O, simple data types and expressions, and to describe each
