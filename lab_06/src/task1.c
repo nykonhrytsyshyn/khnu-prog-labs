@@ -1,6 +1,6 @@
+#include "matrix.h"
 #include "tasks.h"
 #include "utils.h"
-#include "matrix.h"
 
 #include <stdio.h>
 #include <stdlib.h>
