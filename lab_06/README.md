@@ -36,18 +36,25 @@ lab_06/
 
 ```mermaid
 flowchart TD
-  A(["Start"]) --> B[/"Input<br/>task or Enter"/]
-  B --> C{"Valid?"}
-  C -->|No| D[/"Output<br/>error"/]
-  D --> B
-  C -->|"Enter"| E["run_task(i)<br/>(all tasks in order)"]
-  C -->|"1..TASK_COUNT"| F["run_task(task)"]
-  E --> M{"Next task<br/>exists?"}
-  M -->|No| H(["Stop"])
-  M -->|Yes| N{"Ask 'Proceed to<br/>next task? (Y/n)'"}
-  N -->|"Yes (default)"| E
-  N -->|No| H
-  F --> H
+  A(["Start"]) --> B[/"Output<br/>title of the lab"/]
+  B --> C["srand(time(NULL))"]
+  C --> D[/"Input<br/>task or Enter"/]
+  D --> E{"Valid?"}
+  E -->|No| F[/"Output<br/>error"/]
+  F --> D
+  E -->|"1..TASK_COUNT"| G[["run_task(task)"]]
+  E -->|"Enter"| H{{"From i = 1 to TASK_COUNT"}}
+  H --> I[["run_task(i)"]]
+  I --> J{"i < TASK_COUNT"}
+  J -->|Yes| K[/"Input<br/>'Proceed to task i + 1? (Y/n)'"/]
+  J -->|No| H
+  K --> L{"Answer is yes<br/>(Enter = yes)"}
+  L -->|Yes| H
+  L -->|No| M
+  H --> M[/"Output<br/>'Press Enter to exit'"/]
+  G --> M
+  M --> N[/"Input<br/>Enter"/]
+  N --> O(["Stop"])
 
   classDef stage stroke:#666,rx:6,ry:6
   class A,B,C,D,E,F,H,M,N stage
@@ -72,48 +79,23 @@ array of the caller.
 
 ```mermaid
 flowchart TD
-  A(["Start"]) --> B[/"Input<br/>rows, cols"/]
-  B --> C[["fill_random(A, rows, cols)"]]
-  C --> D[["print_matrix(A, rows, cols)"]]
-  D --> E[["min = find_min(A, rows, cols)"]]
-  E --> F[/"Output<br/>min"/]
-  F --> G(["Stop"])
-
-  classDef stage stroke:#666,rx:6,ry:6
-  class A,B,C,D,E,F,G stage
-```
-
-`fill_random`:
-
-```mermaid
-flowchart TD
-  A(["fill_random"]) --> B{{"From i = 0 to rows - 1"}}
-  B --> C{{"From j = 0 to cols - 1"}}
-  C --> D["A[i][j] = rand() % 50 + 1"]
-  D --> C
-  C --> B
-  B --> E(["Return"])
-
-  classDef stage stroke:#666,rx:6,ry:6
-  class A,B,C,D,E stage
-```
-
-`find_min`:
-
-```mermaid
-flowchart TD
-  A(["find_min"]) --> B["min = A[0][0]"]
-  B --> C{{"From i = 0 to rows - 1"}}
-  C --> D{{"From j = 0 to cols - 1"}}
-  D --> E{"A[i][j] < min"}
-  E -->|Yes| F["min = A[i][j]"]
-  E -->|No| D
-  F --> D
-  D --> C
-  C --> G(["Return min"])
-
-  classDef stage stroke:#666,rx:6,ry:6
-  class A,B,C,D,E,F,G stage
+    A(["Start"]) --> B[/"Input<br/>rows n, columns t (1..15)"/]
+    B --> C{{"From i = 0 to rows - 1"}}
+    C --> D{{"From j = 0 to cols - 1"}}
+    D --> E["A[i][j] = rand() % 50 + 1"]
+    E --> D
+    D --> C
+    C --> F[["print_matrix('A', A, rows, cols)"]]
+    F --> G["min = A[0][0]"]
+    G --> H{{"From i = 0 to rows - 1"}}
+    H --> I{{"From j = 0 to cols - 1"}}
+    I --> J{"A[i][j] < min"}
+    J -->|Yes| K["min = A[i][j]"]
+    K --> I
+    J -->|No| I
+    I --> H
+    H --> L[/"Output<br/>min"/]
+    L --> M(["Stop"])
 ```
 
 ## Task 2 - Recursive function
@@ -137,26 +119,14 @@ program prints as a check:
 
 ```mermaid
 flowchart TD
-  A(["Start"]) --> B[/"Input<br/>x (6..500)"/]
-  B --> C[["r = f(x)"]]
-  C --> D[/"Output<br/>r, 3^(7 - x)"/]
-  D --> E(["Stop"])
-
-  classDef stage stroke:#666,rx:6,ry:6
-  class A,B,C,D,E stage
-```
-
-`f(x)`:
-
-```mermaid
-flowchart TD
-  A(["f(x)"]) --> B{"x == 6"}
-  B -->|Yes| C(["Return 3"])
-  B -->|No| D[["r = f(x - 1)"]]
-  D --> E(["Return r / 3"])
-
-  classDef stage stroke:#666,rx:6,ry:6
-  class A,B,C,D,E stage
+  A(["Start"]) --> B[/"Input<br/>natural x (6 <= x <= 500)"/]
+  B --> C{"x == 6"}
+  C -->|Yes| D["r = 3"]
+  C -->|No| E[["r = f(x - 1)"]]
+  E --> F["r = r / 3"]
+  D --> G[/"Output<br/>r, check 3^(7 - x)"/]
+  F --> G
+  G --> H(["Stop"])
 ```
 
 ## Task 3 - Value of a function at a point
@@ -190,36 +160,31 @@ and the program reports the reason and asks for the values again:
 
 ```mermaid
 flowchart TD
-  A(["Start"]) --> B[["read_input(x, y, a, b, j)"]]
-  B --> C[["status = calculate_z(x, y, a, b, j, Z)"]]
-  C --> D{"status == OK"}
-  D -->|No| E[/"Output<br/>reason, 'enter again'"/]
-  E --> B
-  D -->|Yes| F[["print_result(x, y, a, b, j, Z)"]]
-  F --> G(["Stop"])
+    A(["Start"]) --> B[/"Input<br/>x, y, a, b, j<br/>(each from -1e6 to 1e6)"/]
+    B --> C{"y == 0 or x / y <= 0"}
+    C -->|Yes| E1[/"Output<br/>CALC_BAD_LOG_ARGUMENT,<br/>'enter the values again'"/]
+    C -->|No| D["radicand = a * x^2 + b"]
 
-  classDef stage stroke:#666,rx:6,ry:6
-  class A,B,C,D,E,F,G stage
-```
+    D --> E{"radicand < 0"}
+    E -->|Yes| E2[/"Output<br/>CALC_BAD_SQRT_ARGUMENT,<br/>'enter the values again'"/]
+    E -->|No| F["den = e^(-x / y) * sin(x^2 + y)"]
 
-`calculate_z`:
+    F --> G{"den == 0"}
+    G -->|Yes| E3[/"Output<br/>CALC_ZERO_DENOMINATOR,<br/>'enter the values again'"/]
+    G -->|No| H["z = (ln(x / y) + sqrt(radicand) + j) / den"]
 
-```mermaid
-flowchart TD
-  A(["calculate_z"]) --> B{"y == 0 or x / y <= 0"}
-  B -->|Yes| B1(["Return BAD_LOG_ARGUMENT"])
-  B -->|No| C{"a * x^2 + b < 0"}
-  C -->|Yes| C1(["Return BAD_SQRT_ARGUMENT"])
-  C -->|No| D["den = e^(-x / y) * sin(x^2 + y)"]
-  D --> E{"den == 0"}
-  E -->|Yes| E1(["Return ZERO_DENOMINATOR"])
-  E -->|No| F["Z = (ln(x / y) + sqrt(a * x^2 + b) + j) / den"]
-  F --> G{"Z is finite"}
-  G -->|No| G1(["Return NOT_FINITE"])
-  G -->|Yes| H(["Return OK"])
+    H --> I{"z is finite"}
+    I -->|No| E4[/"Output<br/>CALC_NOT_FINITE,<br/>'enter the values again'"/]
+    I -->|Yes| J["Z = z"]
 
-  classDef stage stroke:#666,rx:6,ry:6
-  class A,B,B1,C,C1,D,E,E1,F,G,G1,H stage
+    E1 --> B
+    E2 --> B
+    E3 --> B
+    E4 --> B
+
+    J --> K[/"Output<br/>x, y, a, b, j"/]
+    K --> L[/"Output<br/>Z"/]
+    L --> M(["Stop"])
 ```
 
 ## Results
