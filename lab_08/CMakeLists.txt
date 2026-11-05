@@ -21,7 +21,13 @@ endif ()
 
 add_executable(lab08
         src/main.c
+        src/runner.c
         src/utils.c
+        src/files.c
+        src/matrix.c
+        src/task1.c
+        src/task2.c
+        src/task3.c
 )
 
 target_include_directories(lab08 PRIVATE include)
