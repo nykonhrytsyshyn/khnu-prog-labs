@@ -34,6 +34,8 @@ target_include_directories(lab08 PRIVATE include)
 
 if (NOT MSVC)
   target_link_libraries(lab08 PRIVATE m)
+else ()
+  target_compile_definitions(lab08 PRIVATE _CRT_SECURE_NO_WARNINGS)
 endif ()
 
 if (CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
